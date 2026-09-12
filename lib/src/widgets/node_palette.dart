@@ -23,8 +23,9 @@ class NodePalette extends StatelessWidget {
             children: <Widget>[
               Text(
                 l10n.eaiPalette,
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               Gap.h4,
               Text(
@@ -43,7 +44,12 @@ class NodePalette extends StatelessWidget {
             children: <Widget>[
               for (final family in FlowNodeFamily.values) ...<Widget>[
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(Gap.md, Gap.sm, Gap.md, Gap.xs),
+                  padding: const EdgeInsets.fromLTRB(
+                    Gap.md,
+                    Gap.sm,
+                    Gap.md,
+                    Gap.xs,
+                  ),
                   child: Text(
                     family.display.forLanguage(language),
                     style: theme.textTheme.labelSmall?.copyWith(
@@ -52,8 +58,9 @@ class NodePalette extends StatelessWidget {
                     ),
                   ),
                 ),
-                for (final type
-                    in FlowNodeType.values.where((t) => t.family == family))
+                for (final type in FlowNodeType.values.where(
+                  (t) => t.family == family,
+                ))
                   _PaletteItem(type: type),
               ],
             ],
@@ -97,8 +104,9 @@ class _PaletteItem extends StatelessWidget {
           Expanded(
             child: Text(
               type.display.forLanguage(language),
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -127,8 +135,9 @@ class _PaletteItem extends StatelessWidget {
                 ),
                 child: Text(
                   type.display.forLanguage(language),
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),

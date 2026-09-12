@@ -116,14 +116,16 @@ class _FhirScreenState extends State<FhirScreen> {
                     label: reachable == null
                         ? l10n.labelLoading
                         : reachable
-                            ? l10n.eaiServerOnline
-                            : l10n.eaiServerOffline,
+                        ? l10n.eaiServerOnline
+                        : l10n.eaiServerOffline,
                     color: reachable == true
                         ? HospitalTheme.successOf(context)
                         : reachable == false
-                            ? HospitalTheme.criticalOf(context)
-                            : theme.colorScheme.outline,
-                    icon: reachable == true ? Icons.cloud_done : Icons.cloud_off,
+                        ? HospitalTheme.criticalOf(context)
+                        : theme.colorScheme.outline,
+                    icon: reachable == true
+                        ? Icons.cloud_done
+                        : Icons.cloud_off,
                   ),
                   Gap.w8,
                   Expanded(
@@ -176,8 +178,9 @@ class _FhirScreenState extends State<FhirScreen> {
                     width: 220,
                     child: DropdownButtonFormField<String>(
                       initialValue: _resourceType,
-                      decoration:
-                          InputDecoration(labelText: l10n.eaiResourceType),
+                      decoration: InputDecoration(
+                        labelText: l10n.eaiResourceType,
+                      ),
                       items: <DropdownMenuItem<String>>[
                         for (final type in _resourceTypes)
                           DropdownMenuItem<String>(

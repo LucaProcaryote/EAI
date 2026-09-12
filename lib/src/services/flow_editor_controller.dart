@@ -9,9 +9,9 @@ import 'package:uuid/uuid.dart';
 /// until the user saves.
 class FlowEditorController extends ChangeNotifier {
   FlowEditorController({required IntegrationFlow flow, Uuid? uuid})
-      : _flow = flow,
-        _saved = flow,
-        _uuid = uuid ?? const Uuid();
+    : _flow = flow,
+      _saved = flow,
+      _uuid = uuid ?? const Uuid();
 
   final Uuid _uuid;
 
@@ -100,33 +100,33 @@ class FlowEditorController extends ChangeNotifier {
   static Map<String, dynamic> _defaultConfig(FlowNodeType type) =>
       switch (type) {
         FlowNodeType.filter => <String, dynamic>{
-            'path': 'resourceType',
-            'operator': 'equals',
-            'value': 'Observation',
-          },
+          'path': 'resourceType',
+          'operator': 'equals',
+          'value': 'Observation',
+        },
         FlowNodeType.mapper => <String, dynamic>{
-            'mappings': <dynamic>[],
-            'keepUnmapped': false,
-          },
+          'mappings': <dynamic>[],
+          'keepUnmapped': false,
+        },
         FlowNodeType.enricher => <String, dynamic>{
-            'path': 'subject.reference',
-            'target': 'patient',
-          },
+          'path': 'subject.reference',
+          'target': 'patient',
+        },
         FlowNodeType.router => <String, dynamic>{
-            'path': 'type',
-            'routes': <dynamic>[],
-            'defaultPort': '',
-          },
+          'path': 'type',
+          'routes': <dynamic>[],
+          'defaultPort': '',
+        },
         FlowNodeType.codeTranslator => <String, dynamic>{
-            'path': '',
-            'table': <String, dynamic>{},
-            'onMissing': 'pass',
-          },
+          'path': '',
+          'table': <String, dynamic>{},
+          'onMissing': 'pass',
+        },
         FlowNodeType.applicationDestination => <String, dynamic>{'app': 'EHR'},
         FlowNodeType.httpDestination => <String, dynamic>{
-            'url': '',
-            'method': 'POST',
-          },
+          'url': '',
+          'method': 'POST',
+        },
         _ => const <String, dynamic>{},
       };
 
@@ -164,14 +164,16 @@ class FlowEditorController extends ChangeNotifier {
       updateNode(nodeId, (node) => node.copyWith(config: config));
 
   void deleteNode(String nodeId) {
-    _mutate(_flow.copyWith(
-      nodes: _flow.nodes.where((n) => n.id != nodeId).toList(),
-      // A dangling connection would silently break the flow, so remove any
-      // edge that touched the deleted node.
-      connections: _flow.connections
-          .where((c) => c.fromNodeId != nodeId && c.toNodeId != nodeId)
-          .toList(),
-    ));
+    _mutate(
+      _flow.copyWith(
+        nodes: _flow.nodes.where((n) => n.id != nodeId).toList(),
+        // A dangling connection would silently break the flow, so remove any
+        // edge that touched the deleted node.
+        connections: _flow.connections
+            .where((c) => c.fromNodeId != nodeId && c.toNodeId != nodeId)
+            .toList(),
+      ),
+    );
     if (_selectedNodeId == nodeId) _selectedNodeId = null;
     if (_connectingFromNodeId == nodeId) _connectingFromNodeId = null;
   }
@@ -206,32 +208,41 @@ class FlowEditorController extends ChangeNotifier {
     }
 
     // Adding the same edge twice would double every message that crosses it.
-    final exists = _flow.connections.any((c) =>
-        c.fromNodeId == from &&
-        c.toNodeId == toNodeId &&
-        c.fromPort == _connectingFromPort);
+    final exists = _flow.connections.any(
+      (c) =>
+          c.fromNodeId == from &&
+          c.toNodeId == toNodeId &&
+          c.fromPort == _connectingFromPort,
+    );
     if (exists) {
       notifyListeners();
       return false;
     }
 
-    _mutate(_flow.copyWith(connections: <FlowConnection>[
-      ..._flow.connections,
-      FlowConnection(
-        id: 'c-${_uuid.v4().substring(0, 8)}',
-        fromNodeId: from,
-        toNodeId: toNodeId,
-        fromPort: _connectingFromPort,
+    _mutate(
+      _flow.copyWith(
+        connections: <FlowConnection>[
+          ..._flow.connections,
+          FlowConnection(
+            id: 'c-${_uuid.v4().substring(0, 8)}',
+            fromNodeId: from,
+            toNodeId: toNodeId,
+            fromPort: _connectingFromPort,
+          ),
+        ],
       ),
-    ]));
+    );
     return true;
   }
 
   void deleteConnection(String connectionId) {
-    _mutate(_flow.copyWith(
-      connections:
-          _flow.connections.where((c) => c.id != connectionId).toList(),
-    ));
+    _mutate(
+      _flow.copyWith(
+        connections: _flow.connections
+            .where((c) => c.id != connectionId)
+            .toList(),
+      ),
+    );
   }
 
   // ---- Flow-level ----------------------------------------------------------

@@ -17,22 +17,24 @@ Future<void> pumpEai(WidgetTester tester) async {
     seedUsers.firstWhere((u) => u.role == UserRole.integrationEngineer),
   );
 
-  await tester.pumpWidget(MiniHospitalApp(
-    config: const AppConfig(
-      app: HospitalApp.eai,
-      backendMode: BackendMode.memory,
-      authMode: AuthMode.demo,
-      apiBaseUrl: '',
-      // Unroutable, so the FHIR status check fails fast rather than hanging.
-      fhirBaseUrl: 'http://127.0.0.1:1/fhir',
-      eaiBaseUrl: '',
+  await tester.pumpWidget(
+    MiniHospitalApp(
+      config: const AppConfig(
+        app: HospitalApp.eai,
+        backendMode: BackendMode.memory,
+        authMode: AuthMode.demo,
+        apiBaseUrl: '',
+        // Unroutable, so the FHIR status check fails fast rather than hanging.
+        fhirBaseUrl: 'http://127.0.0.1:1/fhir',
+        eaiBaseUrl: '',
+      ),
+      title: (l10n) => l10n.appTitleEai,
+      homeBuilder: (context) => const EaiHome(),
+      repositoryOverride: repository,
+      authOverride: auth,
+      localeStore: InMemoryLocaleStore(),
     ),
-    title: (l10n) => l10n.appTitleEai,
-    homeBuilder: (context) => const EaiHome(),
-    repositoryOverride: repository,
-    authOverride: auth,
-    localeStore: InMemoryLocaleStore(),
-  ));
+  );
   await tester.pumpAndSettle();
 }
 
@@ -48,8 +50,9 @@ void main() {
     expect(find.textContaining('problem to fix'), findsNothing);
   });
 
-  testWidgets('opening a flow shows palette, canvas and properties',
-      (tester) async {
+  testWidgets('opening a flow shows palette, canvas and properties', (
+    tester,
+  ) async {
     await pumpEai(tester);
 
     await tester.tap(find.text('Low SpO2 alert'));
@@ -87,15 +90,18 @@ void main() {
     );
   });
 
-  testWidgets('the test panel traces a message through the flow',
-      (tester) async {
+  testWidgets('the test panel traces a message through the flow', (
+    tester,
+  ) async {
     await pumpEai(tester);
     await tester.tap(find.text('Low SpO2 alert'));
     await tester.pumpAndSettle();
 
     expect(find.text('Test message'), findsOneWidget);
-    expect(find.text('Run the flow to see what happens at each step.'),
-        findsOneWidget);
+    expect(
+      find.text('Run the flow to see what happens at each step.'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('Run'));
     await tester.pumpAndSettle();
@@ -107,14 +113,17 @@ void main() {
     expect(find.text('Build alert'), findsWidgets);
   });
 
-  testWidgets('the message log is empty until something runs for real',
-      (tester) async {
+  testWidgets('the message log is empty until something runs for real', (
+    tester,
+  ) async {
     await pumpEai(tester);
 
-    await tester.tap(find.descendant(
-      of: find.byType(NavigationRail),
-      matching: find.text('Message log'),
-    ));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.text('Message log'),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('No messages yet.'), findsOneWidget);

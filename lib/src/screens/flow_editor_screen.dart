@@ -19,8 +19,9 @@ class FlowEditorScreen extends StatefulWidget {
 }
 
 class _FlowEditorScreenState extends State<FlowEditorScreen> {
-  late final FlowEditorController _controller =
-      FlowEditorController(flow: widget.flow);
+  late final FlowEditorController _controller = FlowEditorController(
+    flow: widget.flow,
+  );
 
   bool _showTestPanel = true;
 
@@ -121,9 +122,7 @@ class _FlowEditorScreenState extends State<FlowEditorScreen> {
               children: <Widget>[
                 if (controller.isConnecting)
                   Material(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primaryContainer,
+                    color: Theme.of(context).colorScheme.primaryContainer,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: Gap.md,

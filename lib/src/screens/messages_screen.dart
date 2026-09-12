@@ -164,10 +164,7 @@ class _MessageCard extends StatelessWidget {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text(
-                            '${i + 1}.',
-                            style: theme.textTheme.labelSmall,
-                          ),
+                          Text('${i + 1}.', style: theme.textTheme.labelSmall),
                           Gap.w8,
                           Expanded(
                             child: Text(

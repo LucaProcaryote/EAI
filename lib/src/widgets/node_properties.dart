@@ -27,8 +27,9 @@ class NodeProperties extends StatelessWidget {
           children: <Widget>[
             Text(
               l10n.eaiProperties,
-              style: theme.textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.w700),
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
             Gap.h16,
             Text(
@@ -54,8 +55,9 @@ class NodeProperties extends StatelessWidget {
             Expanded(
               child: Text(
                 node.type.display.forLanguage(language),
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             IconButton(
@@ -90,19 +92,18 @@ class NodeProperties extends StatelessWidget {
     BuildContext context,
     FlowEditorController controller,
     FlowNode node,
-  ) =>
-      switch (node.type) {
-        FlowNodeType.filter => <Widget>[_FilterEditor(node: node)],
-        FlowNodeType.mapper => <Widget>[_MapperEditor(node: node)],
-        FlowNodeType.enricher => <Widget>[_EnricherEditor(node: node)],
-        FlowNodeType.router => <Widget>[_RouterEditor(node: node)],
-        FlowNodeType.applicationDestination => <Widget>[
-            _ApplicationEditor(node: node),
-          ],
-        FlowNodeType.httpDestination => <Widget>[_HttpEditor(node: node)],
-        FlowNodeType.codeTranslator => <Widget>[_TranslatorEditor(node: node)],
-        _ => <Widget>[],
-      };
+  ) => switch (node.type) {
+    FlowNodeType.filter => <Widget>[_FilterEditor(node: node)],
+    FlowNodeType.mapper => <Widget>[_MapperEditor(node: node)],
+    FlowNodeType.enricher => <Widget>[_EnricherEditor(node: node)],
+    FlowNodeType.router => <Widget>[_RouterEditor(node: node)],
+    FlowNodeType.applicationDestination => <Widget>[
+      _ApplicationEditor(node: node),
+    ],
+    FlowNodeType.httpDestination => <Widget>[_HttpEditor(node: node)],
+    FlowNodeType.codeTranslator => <Widget>[_TranslatorEditor(node: node)],
+    _ => <Widget>[],
+  };
 }
 
 /// Live list of everything that would stop the flow from running.
@@ -139,8 +140,10 @@ class _ValidationList extends StatelessWidget {
       children: <Widget>[
         Text(
           l10n.eaiValidationIssues(issues.length),
-          style: theme.textTheme.labelMedium
-              ?.copyWith(color: color, fontWeight: FontWeight.w700),
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         Gap.h8,
         for (final issue in issues)
@@ -188,9 +191,9 @@ class _FilterEditor extends StatelessWidget {
     );
 
     void update(String key, Object? value) => controller.setNodeConfig(
-          node.id,
-          <String, dynamic>{...node.config, key: value},
-        );
+      node.id,
+      <String, dynamic>{...node.config, key: value},
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -252,13 +255,11 @@ class _MapperEditor extends StatelessWidget {
     final controller = context.read<FlowEditorController>();
     final mappings = _mappings;
 
-    void save(List<FieldMapping> next) => controller.setNodeConfig(
-          node.id,
-          <String, dynamic>{
-            ...node.config,
-            'mappings': next.map((m) => m.toJson()).toList(),
-          },
-        );
+    void save(List<FieldMapping> next) =>
+        controller.setNodeConfig(node.id, <String, dynamic>{
+          ...node.config,
+          'mappings': next.map((m) => m.toJson()).toList(),
+        });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -339,12 +340,14 @@ class _MappingRow extends StatelessWidget {
                     labelText: l10n.eaiSourceField,
                     isDense: true,
                   ),
-                  onChanged: (value) => onChanged(FieldMapping(
-                    sourcePath: value,
-                    targetPath: mapping.targetPath,
-                    transform: mapping.transform,
-                    argument: mapping.argument,
-                  )),
+                  onChanged: (value) => onChanged(
+                    FieldMapping(
+                      sourcePath: value,
+                      targetPath: mapping.targetPath,
+                      transform: mapping.transform,
+                      argument: mapping.argument,
+                    ),
+                  ),
                 ),
               ),
               const Padding(
@@ -359,12 +362,14 @@ class _MappingRow extends StatelessWidget {
                     labelText: l10n.eaiTargetField,
                     isDense: true,
                   ),
-                  onChanged: (value) => onChanged(FieldMapping(
-                    sourcePath: mapping.sourcePath,
-                    targetPath: value,
-                    transform: mapping.transform,
-                    argument: mapping.argument,
-                  )),
+                  onChanged: (value) => onChanged(
+                    FieldMapping(
+                      sourcePath: mapping.sourcePath,
+                      targetPath: value,
+                      transform: mapping.transform,
+                      argument: mapping.argument,
+                    ),
+                  ),
                 ),
               ),
               IconButton(
@@ -398,12 +403,14 @@ class _MappingRow extends StatelessWidget {
                         ),
                       ),
                   ],
-                  onChanged: (value) => onChanged(FieldMapping(
-                    sourcePath: mapping.sourcePath,
-                    targetPath: mapping.targetPath,
-                    transform: value ?? FieldTransform.none,
-                    argument: mapping.argument,
-                  )),
+                  onChanged: (value) => onChanged(
+                    FieldMapping(
+                      sourcePath: mapping.sourcePath,
+                      targetPath: mapping.targetPath,
+                      transform: value ?? FieldTransform.none,
+                      argument: mapping.argument,
+                    ),
+                  ),
                 ),
               ),
               if (mapping.transform.takesArgument) ...<Widget>[
@@ -416,12 +423,14 @@ class _MappingRow extends StatelessWidget {
                       labelText: l10n.eaiTransformArgument,
                       isDense: true,
                     ),
-                    onChanged: (value) => onChanged(FieldMapping(
-                      sourcePath: mapping.sourcePath,
-                      targetPath: mapping.targetPath,
-                      transform: mapping.transform,
-                      argument: value,
-                    )),
+                    onChanged: (value) => onChanged(
+                      FieldMapping(
+                        sourcePath: mapping.sourcePath,
+                        targetPath: mapping.targetPath,
+                        transform: mapping.transform,
+                        argument: value,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -443,9 +452,9 @@ class _EnricherEditor extends StatelessWidget {
     final controller = context.read<FlowEditorController>();
 
     void update(String key, String value) => controller.setNodeConfig(
-          node.id,
-          <String, dynamic>{...node.config, key: value},
-        );
+      node.id,
+      <String, dynamic>{...node.config, key: value},
+    );
 
     return Column(
       children: <Widget>[
@@ -487,9 +496,9 @@ class _RouterEditor extends StatelessWidget {
         .toList();
 
     void save(List<Map<String, dynamic>> next) => controller.setNodeConfig(
-          node.id,
-          <String, dynamic>{...node.config, 'routes': next},
-        );
+      node.id,
+      <String, dynamic>{...node.config, 'routes': next},
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -585,10 +594,10 @@ class _ApplicationEditor extends StatelessWidget {
         DropdownMenuItem<String>(value: 'ADT', child: Text('ADT')),
         DropdownMenuItem<String>(value: 'PHARM', child: Text('PHARM')),
       ],
-      onChanged: (value) => controller.setNodeConfig(
-        node.id,
-        <String, dynamic>{...node.config, 'app': value},
-      ),
+      onChanged: (value) => controller.setNodeConfig(node.id, <String, dynamic>{
+        ...node.config,
+        'app': value,
+      }),
     );
   }
 }
@@ -620,8 +629,8 @@ class _HttpEditor extends StatelessWidget {
           // runtime failure.
           'Outbound HTTP is disabled in the classroom build.',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: HospitalTheme.warningOf(context),
-              ),
+            color: HospitalTheme.warningOf(context),
+          ),
         ),
       ],
     );
@@ -636,14 +645,15 @@ class _TranslatorEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = HospitalLocalizations.of(context);
     final controller = context.read<FlowEditorController>();
-    final table = (node.config['table'] as Map?)?.cast<String, dynamic>() ??
+    final table =
+        (node.config['table'] as Map?)?.cast<String, dynamic>() ??
         <String, dynamic>{};
     final entries = table.entries.toList();
 
     void save(Map<String, dynamic> next) => controller.setNodeConfig(
-          node.id,
-          <String, dynamic>{...node.config, 'table': next},
-        );
+      node.id,
+      <String, dynamic>{...node.config, 'table': next},
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -693,8 +703,10 @@ class _TranslatorEditor extends StatelessWidget {
                       labelText: 'to',
                       isDense: true,
                     ),
-                    onChanged: (value) =>
-                        save(<String, dynamic>{...table, entries[i].key: value}),
+                    onChanged: (value) => save(<String, dynamic>{
+                      ...table,
+                      entries[i].key: value,
+                    }),
                   ),
                 ),
                 IconButton(

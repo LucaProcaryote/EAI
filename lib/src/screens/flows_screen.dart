@@ -13,7 +13,8 @@ class FlowsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = HospitalLocalizations.of(context);
-    final canEdit = context
+    final canEdit =
+        context
             .watch<AuthService>()
             .currentUser
             ?.role
@@ -74,12 +75,14 @@ class FlowsScreen extends StatelessWidget {
     );
     final saved = await repository.saveFlow(flow);
 
-    await navigator.push(MaterialPageRoute<void>(
-      builder: (_) => ChangeNotifierProvider<EngineService>.value(
-        value: engine,
-        child: FlowEditorScreen(flow: saved),
+    await navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChangeNotifierProvider<EngineService>.value(
+          value: engine,
+          child: FlowEditorScreen(flow: saved),
+        ),
       ),
-    ));
+    );
   }
 }
 
@@ -94,12 +97,14 @@ class _FlowCard extends StatelessWidget {
   /// explicitly or the test panel cannot find it.
   void _open(BuildContext context) {
     final engine = context.read<EngineService>();
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => ChangeNotifierProvider<EngineService>.value(
-        value: engine,
-        child: FlowEditorScreen(flow: flow),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChangeNotifierProvider<EngineService>.value(
+          value: engine,
+          child: FlowEditorScreen(flow: flow),
+        ),
       ),
-    ));
+    );
   }
 
   @override
@@ -123,8 +128,9 @@ class _FlowCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       flow.name.forLanguage(language),
-                      style: theme.textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   StatusChip(
@@ -150,13 +156,15 @@ class _FlowCard extends StatelessWidget {
                 runSpacing: Gap.sm,
                 children: <Widget>[
                   StatusChip(
-                    label: '${flow.nodes.length} ${l10n.eaiPalette.toLowerCase()}',
+                    label:
+                        '${flow.nodes.length} ${l10n.eaiPalette.toLowerCase()}',
                     color: HospitalTheme.infoOf(context),
                     icon: Icons.widgets_outlined,
                     dense: true,
                   ),
                   StatusChip(
-                    label: '${flow.messagesProcessed} ${l10n.eaiMessages.toLowerCase()}',
+                    label:
+                        '${flow.messagesProcessed} ${l10n.eaiMessages.toLowerCase()}',
                     color: theme.colorScheme.outline,
                     icon: Icons.forum_outlined,
                     dense: true,

@@ -3,14 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hospital_core/hospital_core.dart';
 
 IntegrationFlow emptyFlow() => IntegrationFlow(
-      id: 'flow-test',
-      name: const LocalizedText.same('Test'),
-      description: const LocalizedText.same(''),
-      isEnabled: true,
-      nodes: const <FlowNode>[],
-      connections: const <FlowConnection>[],
-      updatedAt: DateTime.utc(2026, 9, 12),
-    );
+  id: 'flow-test',
+  name: const LocalizedText.same('Test'),
+  description: const LocalizedText.same(''),
+  isEnabled: true,
+  nodes: const <FlowNode>[],
+  connections: const <FlowConnection>[],
+  updatedAt: DateTime.utc(2026, 9, 12),
+);
 
 void main() {
   group('building a flow on the canvas', () {
@@ -124,9 +124,16 @@ void main() {
       final controller = FlowEditorController(flow: emptyFlow());
       final source = controller.addNode(FlowNodeType.adtSource, 0, 0);
       final router = controller.addNode(FlowNodeType.router, 200, 0);
-      final ehr = controller.addNode(FlowNodeType.applicationDestination, 400, 0);
-      final pharm =
-          controller.addNode(FlowNodeType.applicationDestination, 400, 200);
+      final ehr = controller.addNode(
+        FlowNodeType.applicationDestination,
+        400,
+        0,
+      );
+      final pharm = controller.addNode(
+        FlowNodeType.applicationDestination,
+        400,
+        200,
+      );
 
       controller.startConnection(source.id);
       controller.completeConnection(router.id);
@@ -135,10 +142,14 @@ void main() {
       controller.startConnection(router.id, port: 'discharge');
       controller.completeConnection(pharm.id);
 
-      expect(controller.flow.successorsOf(router.id, port: 'admission').single.id,
-          ehr.id);
-      expect(controller.flow.successorsOf(router.id, port: 'discharge').single.id,
-          pharm.id);
+      expect(
+        controller.flow.successorsOf(router.id, port: 'admission').single.id,
+        ehr.id,
+      );
+      expect(
+        controller.flow.successorsOf(router.id, port: 'discharge').single.id,
+        pharm.id,
+      );
     });
   });
 
@@ -212,8 +223,11 @@ void main() {
       expect(controller.issues, isNotEmpty);
 
       final sink = controller.addNode(FlowNodeType.logDestination, 300, 0);
-      expect(controller.issues, isNotEmpty,
-          reason: 'the two blocks are not wired together yet');
+      expect(
+        controller.issues,
+        isNotEmpty,
+        reason: 'the two blocks are not wired together yet',
+      );
 
       controller.startConnection(source.id);
       controller.completeConnection(sink.id);
@@ -225,10 +239,7 @@ void main() {
       controller.addNode(FlowNodeType.deviceSource, 0, 0);
       final orphan = controller.addNode(FlowNodeType.logDestination, 300, 0);
 
-      expect(
-        controller.issues.map((i) => i.nodeId),
-        contains(orphan.id),
-      );
+      expect(controller.issues.map((i) => i.nodeId), contains(orphan.id));
     });
   });
 

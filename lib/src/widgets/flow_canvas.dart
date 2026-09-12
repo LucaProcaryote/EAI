@@ -13,8 +13,7 @@ class NodeMetrics {
   static const double height = 84;
   static const double portRadius = 7;
 
-  static Offset inputPort(FlowNode node) =>
-      Offset(node.x, node.y + height / 2);
+  static Offset inputPort(FlowNode node) => Offset(node.x, node.y + height / 2);
 
   static Offset outputPort(FlowNode node) =>
       Offset(node.x + width, node.y + height / 2);
@@ -60,8 +59,9 @@ class FlowCanvas extends StatelessWidget {
                   child: CustomPaint(
                     painter: _CanvasPainter(
                       flow: flow,
-                      gridColor: theme.colorScheme.outlineVariant
-                          .withValues(alpha: 0.4),
+                      gridColor: theme.colorScheme.outlineVariant.withValues(
+                        alpha: 0.4,
+                      ),
                       edgeColor: theme.colorScheme.outline,
                       highlightColor: theme.colorScheme.primary,
                       connectingFrom: controller.connectingFromNodeId,
@@ -82,7 +82,9 @@ class FlowCanvas extends StatelessWidget {
                   Positioned.fill(
                     child: IgnorePointer(
                       child: Container(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                        color: theme.colorScheme.primary.withValues(
+                          alpha: 0.05,
+                        ),
                       ),
                     ),
                   ),
@@ -214,8 +216,9 @@ class _ConnectionHandle extends StatelessWidget {
         message: l10n.eaiDisconnect,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () =>
-              context.read<FlowEditorController>().deleteConnection(connection.id),
+          onTap: () => context.read<FlowEditorController>().deleteConnection(
+            connection.id,
+          ),
           child: Container(
             width: 24,
             height: 24,
@@ -253,27 +256,27 @@ class _NodeBox extends StatelessWidget {
   /// of a flow is readable at a glance; the family name is written on the box
   /// as well, so the colour is a shortcut and not the only signal.
   Color _familyColor(BuildContext context) => switch (node.type.family) {
-        FlowNodeFamily.source => HospitalTheme.successOf(context),
-        FlowNodeFamily.processor => HospitalTheme.infoOf(context),
-        FlowNodeFamily.destination => HospitalTheme.warningOf(context),
-      };
+    FlowNodeFamily.source => HospitalTheme.successOf(context),
+    FlowNodeFamily.processor => HospitalTheme.infoOf(context),
+    FlowNodeFamily.destination => HospitalTheme.warningOf(context),
+  };
 
   IconData get _icon => switch (node.type) {
-        FlowNodeType.httpSource => Icons.input,
-        FlowNodeType.deviceSource => Icons.sensors,
-        FlowNodeType.adtSource => Icons.swap_horiz,
-        FlowNodeType.timerSource => Icons.schedule,
-        FlowNodeType.filter => Icons.filter_alt_outlined,
-        FlowNodeType.mapper => Icons.swap_calls,
-        FlowNodeType.enricher => Icons.person_add_alt,
-        FlowNodeType.validator => Icons.verified_outlined,
-        FlowNodeType.codeTranslator => Icons.translate,
-        FlowNodeType.router => Icons.call_split,
-        FlowNodeType.fhirStore => Icons.storage,
-        FlowNodeType.applicationDestination => Icons.apps,
-        FlowNodeType.httpDestination => Icons.cloud_upload_outlined,
-        FlowNodeType.logDestination => Icons.receipt_long,
-      };
+    FlowNodeType.httpSource => Icons.input,
+    FlowNodeType.deviceSource => Icons.sensors,
+    FlowNodeType.adtSource => Icons.swap_horiz,
+    FlowNodeType.timerSource => Icons.schedule,
+    FlowNodeType.filter => Icons.filter_alt_outlined,
+    FlowNodeType.mapper => Icons.swap_calls,
+    FlowNodeType.enricher => Icons.person_add_alt,
+    FlowNodeType.validator => Icons.verified_outlined,
+    FlowNodeType.codeTranslator => Icons.translate,
+    FlowNodeType.router => Icons.call_split,
+    FlowNodeType.fhirStore => Icons.storage,
+    FlowNodeType.applicationDestination => Icons.apps,
+    FlowNodeType.httpDestination => Icons.cloud_upload_outlined,
+    FlowNodeType.logDestination => Icons.receipt_long,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -290,10 +293,12 @@ class _NodeBox extends StatelessWidget {
           if (controller.isConnecting) {
             final ok = controller.completeConnection(node.id);
             if (!ok) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(HospitalLocalizations.of(context).errorGeneric),
-                duration: const Duration(seconds: 2),
-              ));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(HospitalLocalizations.of(context).errorGeneric),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
             }
           } else {
             controller.select(node.id);
@@ -341,8 +346,9 @@ class _NodeBox extends StatelessWidget {
                         Expanded(
                           child: Text(
                             node.type.family.display.forLanguage(language),
-                            style: theme.textTheme.labelSmall
-                                ?.copyWith(color: color),
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: color,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -353,8 +359,9 @@ class _NodeBox extends StatelessWidget {
                       node.label.isNotEmpty
                           ? node.label
                           : node.type.display.forLanguage(language),
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -417,7 +424,8 @@ class _NodeBox extends StatelessWidget {
         (config['url'] as String?)?.isNotEmpty == true
             ? config['url'].toString()
             : '—',
-      FlowNodeType.enricher => '${config['path'] ?? ''} → ${config['target'] ?? ''}',
+      FlowNodeType.enricher =>
+        '${config['path'] ?? ''} → ${config['target'] ?? ''}',
       FlowNodeType.codeTranslator =>
         '${(config['table'] as Map?)?.length ?? 0} codes',
       _ => '',

@@ -22,8 +22,9 @@ class FlowTestPanel extends StatefulWidget {
 }
 
 class _FlowTestPanelState extends State<FlowTestPanel> {
-  late final TextEditingController _payloadController =
-      TextEditingController(text: _samples.values.first);
+  late final TextEditingController _payloadController = TextEditingController(
+    text: _samples.values.first,
+  );
 
   IntegrationMessage? _result;
   String? _error;
@@ -43,7 +44,7 @@ class _FlowTestPanelState extends State<FlowTestPanel> {
               'system': 'http://loinc.org',
               'code': '2708-6',
               'display': 'Oxygen saturation',
-            }
+            },
           ],
         },
         'subject': <String, dynamic>{'reference': 'Patient/pat-001'},
@@ -68,7 +69,7 @@ class _FlowTestPanelState extends State<FlowTestPanel> {
               'system': 'http://loinc.org',
               'code': '8867-4',
               'display': 'Heart rate',
-            }
+            },
           ],
         },
         'subject': <String, dynamic>{'reference': 'Patient/pat-002'},
@@ -76,28 +77,26 @@ class _FlowTestPanelState extends State<FlowTestPanel> {
         'valueQuantity': <String, dynamic>{'value': 76, 'unit': 'bpm'},
       },
     ),
-    'ADT · admission': const JsonEncoder.withIndent('  ').convert(
-      <String, dynamic>{
-        'type': 'admission',
-        'patient_id': 'pat-007',
-        'to_ward_id': 'ward-int',
-        'to_bed_id': 'bed-int-405a',
-        'occurred_at': '2026-09-12T10:00:00Z',
-        'performed_by': 'Fatima El Amrani',
-      },
-    ),
-    'ADT · discharge': const JsonEncoder.withIndent('  ').convert(
-      <String, dynamic>{
-        'type': 'discharge',
-        'patient_id': 'pat-003',
-        'from_ward_id': 'ward-surg',
-        'occurred_at': '2026-09-12T10:00:00Z',
-        'performed_by': 'Fatima El Amrani',
-      },
-    ),
-    'Broken · not FHIR': const JsonEncoder.withIndent('  ').convert(
-      <String, dynamic>{'temperature': 37.4, 'patient': 'Van Damme'},
-    ),
+    'ADT · admission': const JsonEncoder.withIndent('  ')
+        .convert(<String, dynamic>{
+          'type': 'admission',
+          'patient_id': 'pat-007',
+          'to_ward_id': 'ward-int',
+          'to_bed_id': 'bed-int-405a',
+          'occurred_at': '2026-09-12T10:00:00Z',
+          'performed_by': 'Fatima El Amrani',
+        }),
+    'ADT · discharge': const JsonEncoder.withIndent('  ')
+        .convert(<String, dynamic>{
+          'type': 'discharge',
+          'patient_id': 'pat-003',
+          'from_ward_id': 'ward-surg',
+          'occurred_at': '2026-09-12T10:00:00Z',
+          'performed_by': 'Fatima El Amrani',
+        }),
+    'Broken · not FHIR': const JsonEncoder.withIndent(
+      '  ',
+    ).convert(<String, dynamic>{'temperature': 37.4, 'patient': 'Van Damme'}),
   };
 
   @override
@@ -270,8 +269,9 @@ class _TraceView extends StatelessWidget {
                 Expanded(
                   child: Text(
                     message.error!,
-                    style: theme.textTheme.labelSmall
-                        ?.copyWith(color: HospitalTheme.criticalOf(context)),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: HospitalTheme.criticalOf(context),
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -306,17 +306,17 @@ class _TraceStepTile extends StatelessWidget {
 
     final (Color color, String label) = switch (step.status) {
       MessageStatus.delivered => (
-          HospitalTheme.successOf(context),
-          l10n.eaiStepPassed
-        ),
+        HospitalTheme.successOf(context),
+        l10n.eaiStepPassed,
+      ),
       MessageStatus.failed => (
-          HospitalTheme.criticalOf(context),
-          l10n.eaiStepFailed
-        ),
+        HospitalTheme.criticalOf(context),
+        l10n.eaiStepFailed,
+      ),
       MessageStatus.filtered => (
-          HospitalTheme.warningOf(context),
-          l10n.eaiStepDropped
-        ),
+        HospitalTheme.warningOf(context),
+        l10n.eaiStepDropped,
+      ),
       _ => (HospitalTheme.infoOf(context), l10n.eaiStepPassed),
     };
 
@@ -329,8 +329,10 @@ class _TraceStepTile extends StatelessWidget {
           backgroundColor: color.withValues(alpha: 0.15),
           child: Text(
             '${index + 1}',
-            style: theme.textTheme.labelSmall
-                ?.copyWith(color: color, fontWeight: FontWeight.w700),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         title: Row(
@@ -338,8 +340,9 @@ class _TraceStepTile extends StatelessWidget {
             Expanded(
               child: Text(
                 step.nodeLabel,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),

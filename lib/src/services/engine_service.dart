@@ -8,11 +8,8 @@ import 'package:uuid/uuid.dart';
 /// class supplies the side effects - looking a patient up, writing to FHIR,
 /// delivering to an application - and keeps the message log.
 class EngineService extends ChangeNotifier {
-  EngineService({
-    required this.repository,
-    required this.fhir,
-    Uuid? uuid,
-  }) : _uuid = uuid ?? const Uuid();
+  EngineService({required this.repository, required this.fhir, Uuid? uuid})
+    : _uuid = uuid ?? const Uuid();
 
   final HospitalRepository repository;
   final FhirClient fhir;
@@ -83,11 +80,14 @@ class EngineService extends ChangeNotifier {
 
     if (!dryRun) {
       await repository.saveMessage(result);
-      await repository.saveFlow(flow.copyWith(
-        messagesProcessed: flow.messagesProcessed + 1,
-        messagesFailed:
-            flow.messagesFailed + (result.status == MessageStatus.failed ? 1 : 0),
-      ));
+      await repository.saveFlow(
+        flow.copyWith(
+          messagesProcessed: flow.messagesProcessed + 1,
+          messagesFailed:
+              flow.messagesFailed +
+              (result.status == MessageStatus.failed ? 1 : 0),
+        ),
+      );
     }
     notifyListeners();
     return result;
@@ -99,19 +99,19 @@ class EngineService extends ChangeNotifier {
     Map<String, dynamic> payload, {
     String sourceApp = 'TEST',
     String? messageType,
-  }) =>
-      IntegrationMessage(
-        id: 'msg-${_uuid.v4()}',
-        messageType: messageType ??
-            payload['resourceType']?.toString() ??
-            payload['type']?.toString() ??
-            'unknown',
-        sourceApp: sourceApp,
-        payload: payload,
-        status: MessageStatus.received,
-        receivedAt: DateTime.now(),
-        patientId: _patientIdIn(payload),
-      );
+  }) => IntegrationMessage(
+    id: 'msg-${_uuid.v4()}',
+    messageType:
+        messageType ??
+        payload['resourceType']?.toString() ??
+        payload['type']?.toString() ??
+        'unknown',
+    sourceApp: sourceApp,
+    payload: payload,
+    status: MessageStatus.received,
+    receivedAt: DateTime.now(),
+    patientId: _patientIdIn(payload),
+  );
 
   String? _patientIdIn(Map<String, dynamic> payload) {
     final reference = readPath(payload, 'subject.reference')?.toString();
