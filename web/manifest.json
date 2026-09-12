@@ -1,11 +1,11 @@
 {
-    "name": "eai_app",
-    "short_name": "eai_app",
+    "name": "Mini-Hospital EAI",
+    "short_name": "EAI",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Mini-Hospital 2026 - EAI interoperability server",
+    "background_color": "#004F52",
+    "theme_color": "#00696D",
+    "description": "Mini-Hospital 2026 - Interoperability server - FHIR resources and integration flows",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
