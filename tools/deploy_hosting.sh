@@ -10,13 +10,17 @@
 # in-browser hospital, which is the right classroom default - and any of it can
 # still be overridden per visitor with a query string:
 #
-#   https://my-hospital-2026-eai.web.app/?backend=restApi&api=https://lab-api.example
+#   https://my-hospital-eai.procaryote.com/?backend=restApi&api=https://lab-api.example
 #
 # Requires: the Firebase CLI, and `firebase login` (once).
 set -euo pipefail
 
 TARGET="eai"
 SITE="my-hospital-2026-eai"
+# The address people type. A custom domain is attached to the site
+# above rather than renaming it, so both names stay true and both keep
+# working - which is also why switching domains needs no redeploy.
+DOMAIN="my-hospital-eai.procaryote.com"
 PROJECT="${FIREBASE_PROJECT:-my-hospital-2026}"
 
 BACKEND="memory"
@@ -67,4 +71,4 @@ echo "Deploying to $SITE..."
 firebase deploy --only "hosting:$TARGET" --project "$PROJECT"
 
 echo
-echo "  https://$SITE.web.app"
+echo "  https://$DOMAIN"
