@@ -101,6 +101,13 @@ jobs:
           # a page that cannot reach anything on a student's localhost.
           API_BASE: ${{ vars.API_BASE }}
 
+          # Where the HAPI FHIR server lives, ending in /fhir. Unset, the build
+          # keeps the compiled-in http://localhost:8080/fhir, which is what a
+          # student running fhir-server/docker-compose.yml wants and what a
+          # hosted page can never reach - hence "Offline" on the FHIR tab.
+          # infrastructure/cloud/deploy_fhir.sh prints the URL to put here.
+          FHIR_BASE: ${{ vars.FHIR_BASE }}
+
           # Set these three and the build signs in against Firebase instead of
           # the demo accounts. None is a secret: a web API key identifies the
           # project, it does not authorise anything. The app id differs per
@@ -143,6 +150,7 @@ jobs:
             --dart-define=AUTH="$auth"
           )
           [ -n "$API_BASE" ] && defines+=(--dart-define=API_BASE="$API_BASE")
+          [ -n "$FHIR_BASE" ] && defines+=(--dart-define=FHIR_BASE="$FHIR_BASE")
           for name in FIREBASE_API_KEY FIREBASE_APP_ID \
                       FIREBASE_MESSAGING_SENDER_ID FIREBASE_PROJECT_ID; do
             value="${!name}"
