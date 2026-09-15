@@ -181,21 +181,134 @@ class _MessageCard extends StatelessWidget {
             ),
           Padding(
             padding: const EdgeInsets.fromLTRB(Gap.md, 0, Gap.md, Gap.md),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(Gap.sm),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: SelectableText(
-                const JsonEncoder.withIndent('  ').convert(message.payload),
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
-              ),
-            ),
+            child: _PayloadPanel(payload: message.payload),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The message body, as JSON and - when there is one - as the HL7 v2 text it
+/// arrived in.
+///
+/// Showing only the parsed JSON would hide the thing worth seeing. A student
+/// who has never met v2 needs to look at the pipes once to understand why
+/// PID-5.1 is a position rather than a name, and why an unescaped `^` in a
+/// surname is a data-loss bug rather than a cosmetic one.
+class _PayloadPanel extends StatefulWidget {
+  const _PayloadPanel({required this.payload});
+  final Map<String, dynamic> payload;
+
+  @override
+  State<_PayloadPanel> createState() => _PayloadPanelState();
+}
+
+class _PayloadPanelState extends State<_PayloadPanel> {
+  bool _showJson = false;
+
+  String? get _hl7 {
+    final raw = widget.payload['hl7'];
+    return raw is String && raw.trim().isNotEmpty ? raw : null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final hl7 = _hl7;
+    final showJson = hl7 == null || _showJson;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        if (hl7 != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: SegmentedButton<bool>(
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
+              segments: const <ButtonSegment<bool>>[
+                ButtonSegment<bool>(value: false, label: Text('HL7 v2')),
+                ButtonSegment<bool>(value: true, label: Text('JSON')),
+              ],
+              selected: <bool>{showJson},
+              onSelectionChanged: (selection) =>
+                  setState(() => _showJson = selection.first),
+            ),
+          ),
+        if (hl7 != null) Gap.h8,
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(Gap.sm),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: showJson
+              ? SelectableText(
+                  const JsonEncoder.withIndent('  ').convert(widget.payload),
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                  ),
+                )
+              : _Er7View(message: hl7),
+        ),
+      ],
+    );
+  }
+}
+
+/// One segment per line, with its name set apart.
+///
+/// The wire format separates segments with a carriage return, which no text
+/// widget renders as a line break - so the message would otherwise appear as
+/// one unreadable ribbon.
+class _Er7View extends StatelessWidget {
+  const _Er7View({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final lines = message
+        .split(RegExp(r'\r\n|\r|\n'))
+        .where((line) => line.trim().isNotEmpty)
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        for (final line in lines)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                  width: 34,
+                  child: Text(
+                    line.length >= 3 ? line.substring(0, 3) : line,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: SelectableText(
+                    line.length >= 3 ? line.substring(3) : '',
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
