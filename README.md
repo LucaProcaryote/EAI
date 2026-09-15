@@ -38,11 +38,12 @@ Drag a block from the palette onto the canvas, click one block's output port and
 then another's input port to wire them together, and set the block up in the
 properties panel on the right.
 
-**Fourteen block types in three families.** Sources produce messages (an HTTP
-endpoint, the device feed, ADT events, a timer). Processors change or drop them
-(filter, field mapper, patient enricher, FHIR validator, code translator,
-router). Destinations deliver them (the FHIR store, an application, an HTTP
-call, a log).
+**Nineteen block types in three families.** Sources produce messages (an HTTP
+endpoint, the device feed, ADT events, a timer, an MQTT subscription, an HL7 v2
+message). Processors change or drop them (filter, field mapper, patient
+enricher, FHIR validator, code translator, router, a device-payload decoder,
+an HL7 v2 to FHIR translator). Destinations deliver them (the FHIR store, an
+application, an HTTP call, a log, HL7 v2 out).
 
 Each family has its own colour **and** its name written on every block, so the
 shape of a flow is readable at a glance without colour being the only signal.
@@ -75,18 +76,74 @@ FHIR server or to another application.
 Five ready-made payloads are built in, including one that is deliberately not
 FHIR at all, so students can see what the validator says about it.
 
-## The three worked flows
+## The five worked flows
 
 They are meant to be read before they are run.
 
-1. **Device vitals to the record** — validate, enrich with the patient's
+1. **Bedside monitors to the record** — the whole chain a hospital actually
+   runs. A monitor publishes on MQTT, the engine decodes the device payload
+   into an `ORU^R01` — the message a real monitor sends — translates that to a
+   FHIR Observation, and files it. Three formats, one reading, every step on
+   the trace.
+2. **HL7 v2 admissions to FHIR** — the job an interface engine does all day.
+   An `ADT^A01` arrives as pipes, its segments are parsed, inpatients are kept
+   (`PV1-2 = I`), and the visit becomes a FHIR `Encounter`.
+3. **Device vitals to the record** — validate, enrich with the patient's
    demographics, then store in FHIR *and* push to the EHR. The fan-out from one
    processor to two destinations is the pattern to notice.
-2. **ADT movements fan-out** — a router sends admissions, transfers and
+4. **ADT movements fan-out** — a router sends admissions, transfers and
    discharges down three different branches.
-3. **Low SpO2 alert** — two filters in series, then a mapper that reshapes a
+5. **Low SpO2 alert** — two filters in series, then a mapper that reshapes a
    FHIR Observation into a flat alert. Everything else is dropped, so the alert
    channel stays quiet until it matters.
+
+## HL7 v2
+
+Open any message and switch between **HL7 v2** and **JSON**. The v2 view lays
+out one segment per line, because the wire format separates them with a
+carriage return that no text widget renders as a line break.
+
+Parsed segments are addressable the way the HL7 documentation writes them —
+`PID.5.1`, `PV1.2`, `OBX.0.5` — so the filter and mapper blocks work on a v2
+message with no special handling. A segment that repeats by nature, such as
+`OBX`, is always a list; otherwise a flow written for one reading would break
+on the second.
+
+The translation to FHIR is lossy in both directions, and that is the lesson,
+not a defect. `PID-5` is five components where FHIR `HumanName` is a list and a
+use code. The v2 trigger event has no FHIR element at all, so it rides along as
+an extension rather than being dropped.
+
+**MLLP is not here and cannot be.** The real transport for v2 is raw TCP with
+framing bytes; Cloud Run carries no raw TCP and a browser cannot open a socket.
+The hosted build sends the same bytes over HTTP, and the block's properties
+panel says so. MLLP belongs in the local Docker stack.
+
+## MQTT
+
+When a broker is configured, the engine holds a live subscription while the
+page is open and a band above the message list shows the link, how many
+readings arrived, how many went through a flow, and how many devices are
+online.
+
+That connection lives in the browser, with the page — which is a real
+limitation worth stating to students rather than hiding: readings published
+while nobody has the engine open are not queued anywhere, they are missed. A
+production engine is a server that never closes its tab.
+
+The *MQTT subscription* block holds a topic filter. `#` takes the rest of the
+tree, `+` takes exactly one level:
+
+```
+hospital/ward/ward-icu/#                    everything in intensive care
+hospital/ward/+/bed/+/device/+/heartRate    every heart rate, anywhere
+```
+
+The *Decode device reading* block turns the compact payload a device publishes
+into either a FHIR Observation or an `ORU^R01`. Its resource id is derived from
+the device and the instant rather than generated, so a redelivery — which
+at-least-once makes a certainty, not a corner case — produces one resource
+instead of two.
 
 ## The FHIR server
 
@@ -108,6 +165,9 @@ resolve across both.
 | `AUTH` | `demo`, `firebase` | `demo` |
 | `FHIR_BASE` | the HAPI FHIR endpoint | `http://localhost:8080/fhir` |
 | `API_BASE` | this application's API | `http://localhost:8084` |
+| `MQTT_URL` | broker, `wss://…` | empty — no broker, the band stays hidden |
+| `MQTT_USERNAME` | broker account | empty |
+| `MQTT_PASSWORD` | broker password | empty |
 
 Outbound HTTP from the *HTTP call* block is disabled in the classroom build,
 and the properties panel says so rather than letting a student discover it as a

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hospital_core/hospital_core.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +8,7 @@ import 'screens/flows_screen.dart';
 import 'screens/fhir_screen.dart';
 import 'screens/messages_screen.dart';
 import 'services/engine_service.dart';
+import 'services/mqtt_service.dart';
 
 /// Navigation for the integration engine.
 class EaiHome extends StatelessWidget {
@@ -17,11 +20,37 @@ class EaiHome extends StatelessWidget {
     final config = context.read<AppConfig>();
     final repository = context.read<HospitalRepository>();
 
-    return ChangeNotifierProvider<EngineService>(
-      create: (_) => EngineService(
-        repository: repository,
-        fhir: FhirClient(baseUrl: config.fhirBaseUrl),
-      ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<EngineService>(
+          create: (_) => EngineService(
+            repository: repository,
+            fhir: FhirClient(baseUrl: config.fhirBaseUrl),
+          ),
+        ),
+        // Connects on creation when a broker is configured, so a student who
+        // opens the engine and starts a simulator sees traffic without
+        // having to find a button first.
+        ChangeNotifierProvider<MqttService>(
+          create: (context) {
+            final service = MqttService(
+              engine: context.read<EngineService>(),
+              repository: repository,
+              settings: MqttSettings(
+                url: config.mqttUrl,
+                // One connection per tab. Two clients sharing an identifier
+                // take turns disconnecting each other, which looks exactly
+                // like an unstable broker.
+                clientId: 'eai-${DateTime.now().microsecondsSinceEpoch}',
+                username: config.mqttUsername,
+                password: config.mqttPassword,
+              ),
+            );
+            if (config.usesMqtt) unawaited(service.connect());
+            return service;
+          },
+        ),
+      ],
       child: AppShell(
         title: l10n.appTitleEai,
         destinations: <ShellDestination>[

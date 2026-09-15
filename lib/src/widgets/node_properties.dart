@@ -102,6 +102,8 @@ class NodeProperties extends StatelessWidget {
     ],
     FlowNodeType.httpDestination => <Widget>[_HttpEditor(node: node)],
     FlowNodeType.codeTranslator => <Widget>[_TranslatorEditor(node: node)],
+    FlowNodeType.mqttSource => <Widget>[_MqttSourceEditor(node: node)],
+    FlowNodeType.deviceDecoder => <Widget>[_DecoderEditor(node: node)],
     FlowNodeType.hl7Source => <Widget>[_Hl7SourceEditor(node: node)],
     FlowNodeType.hl7ToFhir => <Widget>[_Hl7TargetEditor(node: node)],
     FlowNodeType.hl7Destination => <Widget>[_Hl7DestinationEditor(node: node)],
@@ -601,6 +603,89 @@ class _ApplicationEditor extends StatelessWidget {
         ...node.config,
         'app': value,
       }),
+    );
+  }
+}
+
+/// Which topics this flow listens on.
+///
+/// The filter is read by the application holding the broker connection, not
+/// by the engine: a flow describes what it wants, and something with a socket
+/// goes and subscribes to it.
+class _MqttSourceEditor extends StatelessWidget {
+  const _MqttSourceEditor({required this.node});
+  final FlowNode node;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.read<FlowEditorController>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        TextFormField(
+          key: ValueKey<String>('mqtt-filter-${node.id}'),
+          initialValue: (node.config['filter'] ?? MqttTopics.allReadings)
+              .toString(),
+          decoration: const InputDecoration(
+            labelText: 'Topic filter',
+            hintText: 'hospital/ward/+/bed/+/device/+/heartRate',
+          ),
+          onChanged: (value) => controller.setNodeConfig(
+            node.id,
+            <String, dynamic>{...node.config, 'filter': value},
+          ),
+        ),
+        Gap.h8,
+        Text(
+          '# takes the rest of the tree, + takes exactly one level. '
+          '${MqttTopics.wardReadings('ward-icu')} is one ward; '
+          '${MqttTopics.metricEverywhere('heartRate')} is one measurement '
+          'everywhere.',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+      ],
+    );
+  }
+}
+
+/// What the device payload should be turned into.
+class _DecoderEditor extends StatelessWidget {
+  const _DecoderEditor({required this.node});
+  final FlowNode node;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.read<FlowEditorController>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        DropdownButtonFormField<String>(
+          initialValue: (node.config['format'] ?? 'fhir').toString(),
+          isExpanded: true,
+          decoration: const InputDecoration(labelText: 'Decode to'),
+          items: const <DropdownMenuItem<String>>[
+            DropdownMenuItem<String>(
+              value: 'fhir',
+              child: Text('FHIR Observation'),
+            ),
+            DropdownMenuItem<String>(
+              value: 'hl7v2',
+              child: Text('HL7 v2 ORU^R01'),
+            ),
+          ],
+          onChanged: (value) => controller.setNodeConfig(
+            node.id,
+            <String, dynamic>{...node.config, 'format': value},
+          ),
+        ),
+        Gap.h8,
+        Text(
+          'ORU^R01 needs a name and a record number for PID, so it looks the '
+          'patient up; the device payload carries only an internal id, as a '
+          'real monitor does.',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+      ],
     );
   }
 }

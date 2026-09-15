@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:hospital_core/hospital_core.dart';
+import 'package:provider/provider.dart';
+
+import '../services/mqtt_service.dart';
 
 /// Everything the engine has handled, with the full trace of each message.
 class MessagesScreen extends StatefulWidget {
@@ -21,6 +24,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
     return Column(
       children: <Widget>[
+        const _BrokerBand(),
         SizedBox(
           height: 56,
           child: ListView(
@@ -184,6 +188,75 @@ class _MessageCard extends StatelessWidget {
             child: _PayloadPanel(payload: message.payload),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// State of the broker connection, above the message list.
+///
+/// Worth a permanent strip rather than a transient snack: a flow that
+/// receives nothing because the link dropped looks identical to a flow that
+/// receives nothing because no device is publishing, and a student cannot
+/// tell those apart without being told which one it is.
+class _BrokerBand extends StatelessWidget {
+  const _BrokerBand();
+
+  @override
+  Widget build(BuildContext context) {
+    final mqtt = context.watch<MqttService>();
+    if (!mqtt.isConfigured) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final online = mqtt.presence.values
+        .where((p) => p.presence == DevicePresence.online)
+        .length;
+
+    final (IconData icon, Color colour, String label) = switch (mqtt.state) {
+      MqttLinkState.connected => (
+        Icons.wifi_tethering,
+        HospitalTheme.successOf(context),
+        'Broker connected · $online device${online == 1 ? '' : 's'} online · '
+            '${mqtt.received} received, ${mqtt.processed} through a flow',
+      ),
+      MqttLinkState.connecting => (
+        Icons.wifi_tethering,
+        HospitalTheme.infoOf(context),
+        'Connecting to the broker…',
+      ),
+      MqttLinkState.disconnected => (
+        Icons.wifi_tethering_off,
+        HospitalTheme.warningOf(context),
+        'Not connected to the broker.',
+      ),
+      MqttLinkState.failed => (
+        Icons.wifi_tethering_error,
+        theme.colorScheme.error,
+        mqtt.error ?? 'The broker connection failed.',
+      ),
+    };
+
+    return Material(
+      color: colour.withValues(alpha: 0.10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Gap.md,
+          vertical: Gap.sm,
+        ),
+        child: Row(
+          children: <Widget>[
+            Icon(icon, size: 16, color: colour),
+            Gap.w8,
+            Expanded(
+              child: Text(label, style: theme.textTheme.labelSmall),
+            ),
+            if (mqtt.state != MqttLinkState.connecting)
+              TextButton(
+                onPressed: mqtt.connect,
+                child: const Text('Reconnect'),
+              ),
+          ],
+        ),
       ),
     );
   }
