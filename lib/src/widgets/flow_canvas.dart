@@ -266,15 +266,20 @@ class _NodeBox extends StatelessWidget {
     FlowNodeType.deviceSource => Icons.sensors,
     FlowNodeType.adtSource => Icons.swap_horiz,
     FlowNodeType.timerSource => Icons.schedule,
+    FlowNodeType.hl7Source => Icons.article_outlined,
+    FlowNodeType.mqttSource => Icons.wifi_tethering,
     FlowNodeType.filter => Icons.filter_alt_outlined,
     FlowNodeType.mapper => Icons.swap_calls,
     FlowNodeType.enricher => Icons.person_add_alt,
     FlowNodeType.validator => Icons.verified_outlined,
     FlowNodeType.codeTranslator => Icons.translate,
+    FlowNodeType.deviceDecoder => Icons.memory,
+    FlowNodeType.hl7ToFhir => Icons.transform,
     FlowNodeType.router => Icons.call_split,
     FlowNodeType.fhirStore => Icons.storage,
     FlowNodeType.applicationDestination => Icons.apps,
     FlowNodeType.httpDestination => Icons.cloud_upload_outlined,
+    FlowNodeType.hl7Destination => Icons.outbox_outlined,
     FlowNodeType.logDestination => Icons.receipt_long,
   };
 
@@ -428,6 +433,15 @@ class _NodeBox extends StatelessWidget {
         '${config['path'] ?? ''} → ${config['target'] ?? ''}',
       FlowNodeType.codeTranslator =>
         '${(config['table'] as Map?)?.length ?? 0} codes',
+      FlowNodeType.hl7Source => (config['path'] ?? 'hl7').toString(),
+      FlowNodeType.mqttSource =>
+        (config['filter'] ?? MqttTopics.allReadings).toString(),
+      FlowNodeType.deviceDecoder => '→ ${config['format'] ?? 'fhir'}',
+      FlowNodeType.hl7ToFhir => '→ ${config['target'] ?? 'auto'}',
+      FlowNodeType.hl7Destination =>
+        (config['app'] as String?)?.isNotEmpty == true
+            ? config['app'].toString()
+            : '—',
       _ => '',
     };
   }

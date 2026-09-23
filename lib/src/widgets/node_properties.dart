@@ -102,6 +102,11 @@ class NodeProperties extends StatelessWidget {
     ],
     FlowNodeType.httpDestination => <Widget>[_HttpEditor(node: node)],
     FlowNodeType.codeTranslator => <Widget>[_TranslatorEditor(node: node)],
+    FlowNodeType.mqttSource => <Widget>[_MqttSourceEditor(node: node)],
+    FlowNodeType.deviceDecoder => <Widget>[_DecoderEditor(node: node)],
+    FlowNodeType.hl7Source => <Widget>[_Hl7SourceEditor(node: node)],
+    FlowNodeType.hl7ToFhir => <Widget>[_Hl7TargetEditor(node: node)],
+    FlowNodeType.hl7Destination => <Widget>[_Hl7DestinationEditor(node: node)],
     _ => <Widget>[],
   };
 }
@@ -598,6 +603,218 @@ class _ApplicationEditor extends StatelessWidget {
         ...node.config,
         'app': value,
       }),
+    );
+  }
+}
+
+/// Which topics this flow listens on.
+///
+/// The filter is read by the application holding the broker connection, not
+/// by the engine: a flow describes what it wants, and something with a socket
+/// goes and subscribes to it.
+class _MqttSourceEditor extends StatelessWidget {
+  const _MqttSourceEditor({required this.node});
+  final FlowNode node;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.read<FlowEditorController>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        TextFormField(
+          key: ValueKey<String>('mqtt-filter-${node.id}'),
+          initialValue: (node.config['filter'] ?? MqttTopics.allReadings)
+              .toString(),
+          decoration: const InputDecoration(
+            labelText: 'Topic filter',
+            hintText: 'hospital/ward/+/bed/+/device/+/heartRate',
+          ),
+          onChanged: (value) => controller.setNodeConfig(
+            node.id,
+            <String, dynamic>{...node.config, 'filter': value},
+          ),
+        ),
+        Gap.h8,
+        Text(
+          '# takes the rest of the tree, + takes exactly one level. '
+          '${MqttTopics.wardReadings('ward-icu')} is one ward; '
+          '${MqttTopics.metricEverywhere('heartRate')} is one measurement '
+          'everywhere.',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+      ],
+    );
+  }
+}
+
+/// What the device payload should be turned into.
+class _DecoderEditor extends StatelessWidget {
+  const _DecoderEditor({required this.node});
+  final FlowNode node;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.read<FlowEditorController>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        DropdownButtonFormField<String>(
+          initialValue: (node.config['format'] ?? 'fhir').toString(),
+          isExpanded: true,
+          decoration: const InputDecoration(labelText: 'Decode to'),
+          items: const <DropdownMenuItem<String>>[
+            DropdownMenuItem<String>(
+              value: 'fhir',
+              child: Text('FHIR Observation'),
+            ),
+            DropdownMenuItem<String>(
+              value: 'hl7v2',
+              child: Text('HL7 v2 ORU^R01'),
+            ),
+          ],
+          onChanged: (value) => controller.setNodeConfig(
+            node.id,
+            <String, dynamic>{...node.config, 'format': value},
+          ),
+        ),
+        Gap.h8,
+        Text(
+          'ORU^R01 needs a name and a record number for PID, so it looks the '
+          'patient up; the device payload carries only an internal id, as a '
+          'real monitor does.',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+      ],
+    );
+  }
+}
+
+/// Where the raw v2 text sits in the incoming payload.
+///
+/// Almost always `hl7`, but an application that wraps the message in an
+/// envelope of its own needs to be able to say so without a code change.
+class _Hl7SourceEditor extends StatelessWidget {
+  const _Hl7SourceEditor({required this.node});
+  final FlowNode node;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.read<FlowEditorController>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        TextFormField(
+          key: ValueKey<String>('hl7-path-${node.id}'),
+          initialValue: (node.config['path'] ?? 'hl7').toString(),
+          decoration: const InputDecoration(
+            labelText: 'Field holding the message',
+            hintText: 'hl7',
+          ),
+          onChanged: (value) => controller.setNodeConfig(
+            node.id,
+            <String, dynamic>{...node.config, 'path': value},
+          ),
+        ),
+        Gap.h8,
+        Text(
+          'Segments become PID.5.1, PV1.2, OBX.0.5 and so on, which is what '
+          'the field pickers downstream will offer.',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+      ],
+    );
+  }
+}
+
+/// Which FHIR resource the translation should produce.
+class _Hl7TargetEditor extends StatelessWidget {
+  const _Hl7TargetEditor({required this.node});
+  final FlowNode node;
+
+  static const Map<Hl7FhirTarget, String> _labels = <Hl7FhirTarget, String>{
+    Hl7FhirTarget.auto: 'Automatic (ADT → Encounter, ORU → Observation)',
+    Hl7FhirTarget.patient: 'Patient',
+    Hl7FhirTarget.encounter: 'Encounter',
+    Hl7FhirTarget.observation: 'Observation',
+    Hl7FhirTarget.bundle: 'Bundle (everything in the message)',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.read<FlowEditorController>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        DropdownButtonFormField<String>(
+          initialValue: (node.config['target'] ?? 'auto').toString(),
+          isExpanded: true,
+          decoration: const InputDecoration(labelText: 'FHIR resource'),
+          items: <DropdownMenuItem<String>>[
+            for (final entry in _labels.entries)
+              DropdownMenuItem<String>(
+                value: entry.key.name,
+                child: Text(entry.value),
+              ),
+          ],
+          onChanged: (value) => controller.setNodeConfig(
+            node.id,
+            <String, dynamic>{...node.config, 'target': value},
+          ),
+        ),
+        Gap.h8,
+        Text(
+          'A message with several OBX segments yields several Observations. '
+          'Every target but Bundle takes the first, and a FHIR server will '
+          'not store a collection Bundle as it stands.',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+      ],
+    );
+  }
+}
+
+/// Which application receives the re-encoded v2 message.
+class _Hl7DestinationEditor extends StatelessWidget {
+  const _Hl7DestinationEditor({required this.node});
+  final FlowNode node;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.read<FlowEditorController>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        DropdownButtonFormField<String>(
+          initialValue: (node.config['app'] ?? '').toString(),
+          isExpanded: true,
+          decoration: const InputDecoration(labelText: 'Application'),
+          items: const <DropdownMenuItem<String>>[
+            DropdownMenuItem<String>(
+              value: '',
+              child: Text('None (record only)'),
+            ),
+            DropdownMenuItem<String>(value: 'EHR', child: Text('EHR')),
+            DropdownMenuItem<String>(value: 'ADT', child: Text('ADT')),
+            DropdownMenuItem<String>(value: 'PHARM', child: Text('PHARM')),
+          ],
+          onChanged: (value) => controller.setNodeConfig(
+            node.id,
+            <String, dynamic>{...node.config, 'app': value},
+          ),
+        ),
+        Gap.h8,
+        Text(
+          // The honest version of what this node does online, so nobody
+          // believes the hosted build is sending MLLP over the internet.
+          'Delivered over HTTP here: Cloud Run carries no raw TCP, so MLLP '
+          'runs only in the local Docker stack. The bytes on the wire are '
+          'the same.',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: HospitalTheme.warningOf(context),
+          ),
+        ),
+      ],
     );
   }
 }
