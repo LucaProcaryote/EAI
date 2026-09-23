@@ -247,9 +247,7 @@ class _BrokerBand extends StatelessWidget {
           children: <Widget>[
             Icon(icon, size: 16, color: colour),
             Gap.w8,
-            Expanded(
-              child: Text(label, style: theme.textTheme.labelSmall),
-            ),
+            Expanded(child: Text(label, style: theme.textTheme.labelSmall)),
             if (mqtt.state != MqttLinkState.connecting)
               TextButton(
                 onPressed: mqtt.connect,
@@ -319,10 +317,7 @@ class _PayloadPanelState extends State<_PayloadPanel> {
           child: showJson
               ? SelectableText(
                   const JsonEncoder.withIndent('  ').convert(widget.payload),
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
                 )
               : _Er7View(message: hl7),
         ),

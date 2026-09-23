@@ -790,7 +790,10 @@ class _Hl7DestinationEditor extends StatelessWidget {
           isExpanded: true,
           decoration: const InputDecoration(labelText: 'Application'),
           items: const <DropdownMenuItem<String>>[
-            DropdownMenuItem<String>(value: '', child: Text('None (record only)')),
+            DropdownMenuItem<String>(
+              value: '',
+              child: Text('None (record only)'),
+            ),
             DropdownMenuItem<String>(value: 'EHR', child: Text('EHR')),
             DropdownMenuItem<String>(value: 'ADT', child: Text('ADT')),
             DropdownMenuItem<String>(value: 'PHARM', child: Text('PHARM')),
